@@ -110,14 +110,14 @@ def run_standalone_analysis(address: str = None):
 
 
 def run_api_server():
-    """Start the Flask API server"""
+    """Start the Flask API server with WebSocket support"""
     try:
         print("🔗 Starting ChainBreak API Server...")
         print("=" * 50)
 
-        app = create_app()
+        from src.api import run_app
 
-        print("✅ API server started successfully!")
+        print("✅ API server initialized successfully!")
         print("📖 API Documentation: http://localhost:5000/")
         print("🔌 API Endpoints:")
         print("  GET  /api/status          - System status")
@@ -125,10 +125,12 @@ def run_api_server():
         print("  POST /api/analyze/batch   - Analyze multiple addresses")
         print("  GET  /api/export/gephi    - Export to Gephi")
         print("  POST /api/report/risk     - Generate risk report")
+        print("  POST /api/community-detection/detect  - Community detection")
+        print("  WS   /socket.io           - Real-time WebSocket")
         print("\n🚀 Server running on http://localhost:5000")
         print("Press Ctrl+C to stop the server")
 
-        app.run(debug=False, host='0.0.0.0', port=5000)
+        run_app(debug=False, host='0.0.0.0', port=5000)
 
     except KeyboardInterrupt:
         print("\n\n⚠️  API server stopped by user")

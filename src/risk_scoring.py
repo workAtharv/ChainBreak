@@ -157,29 +157,29 @@ class RiskScorer:
         """Calculate risk based on transaction frequency patterns"""
         if not address_info:
             return 0.5
-        
+
         outgoing_tx_count = address_info.get('outgoing_tx_count', 0) or 0
         incoming_tx_count = address_info.get('incoming_tx_count', 0) or 0
         total_tx_count = address_info.get('transaction_count', 0) or 0
-        
-        # Very high transaction count is suspicious
+
+        # Calculate base risk score from transaction count
         if total_tx_count > 1000:
-            return 0.9
+            risk_score = 0.9
         elif total_tx_count > 500:
-            return 0.8
+            risk_score = 0.8
         elif total_tx_count > 100:
-            return 0.6
+            risk_score = 0.6
         elif total_tx_count > 50:
-            return 0.4
+            risk_score = 0.4
         else:
-            return 0.2
-        
+            risk_score = 0.2
+
         # Consider ratio of incoming vs outgoing
         if outgoing_tx_count > 0 and incoming_tx_count > 0:
             ratio = outgoing_tx_count / incoming_tx_count
             if ratio > 10 or ratio < 0.1:  # Very imbalanced
-                return min(0.9, risk_score + 0.2)
-        
+                risk_score = min(0.9, risk_score + 0.2)
+
         return risk_score
     
     def _calculate_layering_risk(self, address: str) -> float:

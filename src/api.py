@@ -14,10 +14,20 @@ app = Flask(__name__)
 # Enable CORS before registering blueprints
 CORS(app, resources={
     r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]},
-    r"/frontend/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]}
+    r"/frontend/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]},
+    r"/socket.io/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]}
 })
 
 app.register_blueprint(frontend_bp)
+
+# Initialize WebSocket
+try:
+    from .websocket_manager import init_websocket
+    socketio = init_websocket(app)
+    logger.info("WebSocket initialized successfully")
+except Exception as e:
+    logger.warning(f"WebSocket initialization failed: {e}. Real-time features will be unavailable.")
+    socketio = None
 
 # Unified data directory - use data/graph (consistent with actual structure)
 GRAPH_DIR = Path("data/graph")
@@ -473,6 +483,66 @@ def check_graph_illicit_addresses():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/community-detection/detect", methods=["POST"])
+def detect_communities():
+    """Run community detection on graph data"""
+    try:
+        data = request.get_json()
+        graph_data = data.get("graph_data")
+        algorithm = data.get("algorithm", "louvain")
+
+        if not graph_data:
+            return jsonify({"success": False, "error": "Graph data required"}), 400
+
+        if algorithm not in ['louvain', 'leiden', 'label_propagation']:
+            return jsonify({"success": False, "error": "Invalid algorithm. Choose: louvain, leiden, or label_propagation"}), 400
+
+        # Validate graph data
+        from .graph_validator import GraphValidator
+
+        is_valid, error_msg, sanitized_graph = GraphValidator.validate_graph_data(graph_data)
+
+        if not is_valid:
+            logger.warning(f"Invalid graph data: {error_msg}")
+            return jsonify({"success": False, "error": f"Invalid graph data: {error_msg}"}), 400
+
+        # Run community detection on sanitized data
+        from .community_detection import CommunityDetector
+
+        detector = CommunityDetector()
+        result = detector.detect_communities(sanitized_graph, algorithm)
+
+        return jsonify({"success": True, "data": result})
+
+    except Exception as e:
+        logger.error(f"Error in community detection: {e}")
+        logger.error(traceback.format_exc())
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/community-detection/compare", methods=["POST"])
+def compare_community_algorithms():
+    """Compare all three community detection algorithms"""
+    try:
+        data = request.get_json()
+        graph_data = data.get("graph_data")
+
+        if not graph_data:
+            return jsonify({"success": False, "error": "Graph data required"}), 400
+
+        from .community_detection import CommunityDetector
+
+        detector = CommunityDetector()
+        result = detector.compare_algorithms(graph_data)
+
+        return jsonify({"success": True, "data": result})
+
+    except Exception as e:
+        logger.error(f"Error comparing algorithms: {e}")
+        logger.error(traceback.format_exc())
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 @app.errorhandler(404)
 def not_found(error):
     logger.warning(f"404 error: {request.url}")
@@ -496,5 +566,15 @@ def create_app(config=None):
     return app
 
 
+def run_app(host='0.0.0.0', port=5000, debug=False):
+    """Run the app with WebSocket support"""
+    if socketio:
+        logger.info(f"Starting server with WebSocket on {host}:{port}")
+        socketio.run(app, host=host, port=port, debug=debug, allow_unsafe_werkzeug=True)
+    else:
+        logger.info(f"Starting server without WebSocket on {host}:{port}")
+        app.run(host=host, port=port, debug=debug)
+
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    run_app(debug=True)

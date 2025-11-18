@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
-import { Bitcoin, Activity, BarChart3, Settings, Zap, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Bitcoin, Activity, BarChart3, Settings, Zap, AlertCircle, CheckCircle, XCircle, FileJson } from 'lucide-react';
 import logger from './utils/logger';
 import { chainbreakAPI } from './utils/api';
 import AddressInput from './components/AddressInput';
@@ -10,6 +10,7 @@ import GraphList from './components/GraphList';
 import NodeDetails from './components/NodeDetails';
 import SystemStatus from './components/SystemStatus';
 import ThreatIntelligencePanel from './components/ThreatIntelligencePanel';
+import JsonViewer from './components/JsonViewer';
 import toast from 'react-hot-toast';
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('graph');
   const [threatIntelData, setThreatIntelData] = useState(null);
+  const [showJsonViewer, setShowJsonViewer] = useState(false);
 
   const checkBackendMode = useCallback(async () => {
     try {
@@ -258,32 +260,40 @@ const App = () => {
         }}
       />
 
-      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50">
+      <header className="bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 border-b border-indigo-500/30 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <Bitcoin className="w-8 h-8 text-blue-500" />
-              <h1 className="text-2xl font-bold text-white">ChainBreak</h1>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Bitcoin className="w-10 h-10 text-yellow-400 animate-glow" />
+                <div className="absolute inset-0 blur-lg bg-yellow-400 opacity-30 animate-pulse"></div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white tracking-tight">
+                  Chain<span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">Break</span>
+                </h1>
+                <p className="text-xs text-indigo-300">Blockchain Forensic Analysis</p>
+              </div>
               {backendMode && (
-                <div className="flex items-center space-x-2 ml-4">
-                  <div className={`w-2 h-2 rounded-full ${
-                    backendMode.neo4j_available ? 'bg-green-500' : 'bg-yellow-500'
+                <div className="flex items-center space-x-2 ml-6 px-3 py-1 glass-card rounded-full">
+                  <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${
+                    backendMode.neo4j_available ? 'bg-green-400 shadow-lg shadow-green-400/50' : 'bg-yellow-400 shadow-lg shadow-yellow-400/50'
                   }`} />
-                  <span className="text-sm text-gray-300">
+                  <span className="text-sm font-medium text-white">
                     {backendMode.backend_mode === 'neo4j' ? 'Neo4j' : 'JSON'} Mode
                   </span>
                 </div>
               )}
             </div>
-            
-            <div className="flex items-center space-x-4">
+
+            <div className="flex items-center space-x-3">
               <button
                 onClick={handleRefresh}
                 disabled={isLoading}
-                className="flex items-center space-x-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 transition-all duration-300 backdrop-blur-sm border border-white/20 btn-glow"
               >
-                <Activity className="w-4 h-4" />
-                <span>Refresh</span>
+                <Activity className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <span className="font-medium">Refresh</span>
               </button>
             </div>
           </div>
@@ -318,11 +328,20 @@ const App = () => {
               <div className="bg-gray-700/50 px-6 py-4 border-b border-gray-600/50">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-white">Transaction Graph</h2>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3">
                     {currentGraph && (
-                      <span className="text-sm text-gray-400">
-                        {currentGraph.nodes?.length || 0} nodes, {currentGraph.edges?.length || 0} edges
-                      </span>
+                      <>
+                        <span className="text-sm text-gray-400">
+                          {currentGraph.nodes?.length || 0} nodes, {currentGraph.edges?.length || 0} edges
+                        </span>
+                        <button
+                          onClick={() => setShowJsonViewer(true)}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors text-sm"
+                        >
+                          <FileJson className="w-4 h-4" />
+                          View JSON
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -354,6 +373,14 @@ const App = () => {
           </div>
         </div>
       </main>
+
+      {/* JSON Viewer Modal */}
+      {showJsonViewer && currentGraph && (
+        <JsonViewer
+          data={currentGraph}
+          onClose={() => setShowJsonViewer(false)}
+        />
+      )}
     </div>
   );
 };

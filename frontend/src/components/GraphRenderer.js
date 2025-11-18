@@ -277,18 +277,59 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
     }
   }, []);
 
-  const runLouvainAlgorithm = useCallback(async () => {
+  const runCommunityDetection = useCallback(async (algorithm = 'louvain') => {
     try {
       setIsLoading(true);
-      logger.info('Louvain community detection not implemented with D3');
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 200);
+      logger.info(`Running ${algorithm} community detection`);
+      toast.loading(`Running ${algorithm} algorithm...`);
+
+      const response = await fetch('http://localhost:5000/api/community-detection/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          graph_data: graphData,
+          algorithm: algorithm
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const communityData = result.data;
+        setCommunities(communityData.communities);
+
+        // Color nodes by community
+        const communityColors = {};
+        const numCommunities = communityData.community_count;
+        for (let i = 0; i < numCommunities; i++) {
+          const hue = (i * 360 / numCommunities) % 360;
+          communityColors[i] = `hsl(${hue}, 70%, 60%)`;
+        }
+
+        // Update node colors
+        const nodes = graphRef.current.nodes.map(n => ({
+          ...n,
+          color: communityColors[communityData.communities[n.id]] || n.color
+        }));
+
+        graphRef.current = { nodes, edges: graphRef.current.edges };
+        initializeD3(graphRef.current);
+
+        toast.dismiss();
+        toast.success(`${algorithm} complete! Found ${numCommunities} communities (modularity: ${communityData.statistics.modularity.toFixed(3)})`);
+        logger.info(`Community detection complete:`, communityData.statistics);
+      } else {
+        throw new Error(result.error || 'Community detection failed');
+      }
     } catch (err) {
-      logger.error('Louvain algorithm failed', err);
+      logger.error(`${algorithm} algorithm failed`, err);
+      toast.dismiss();
+      toast.error(`Community detection failed: ${err.message}`);
       setError(`Community detection failed: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }, [graphData, initializeD3]);
 
   const resetGraph = useCallback(() => {
     if (!graphRef.current) return;
@@ -527,7 +568,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={runLouvainAlgorithm}
+          onClick={() => runCommunityDetection('louvain')}
           disabled={isLoading || !containerReady}
           className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
@@ -536,7 +577,35 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
           ) : (
             <Play className="w-4 h-4" />
           )}
-          Run Louvain
+          Louvain
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => runCommunityDetection('leiden')}
+          disabled={isLoading || !containerReady}
+          className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+          Leiden
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => runCommunityDetection('label_propagation')}
+          disabled={isLoading || !containerReady}
+          className="flex items-center gap-2 px-3 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Play className="w-4 h-4" />
+          )}
+          Label Prop
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.05 }}

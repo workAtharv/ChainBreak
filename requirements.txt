@@ -8,6 +8,9 @@ networkx
 matplotlib
 flask
 flask-cors
+flask-socketio
+python-socketio
+eventlet
 pyyaml
 
 # Additional utilities
