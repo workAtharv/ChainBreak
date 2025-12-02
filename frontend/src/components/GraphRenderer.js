@@ -94,7 +94,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         .style('background', '#111827');
       svgRef.current = svg;
       const g = svg.append('g');
-      
+
       // Add arrow markers for edges
       const defs = svg.append('defs');
       const arrowMarker = defs.append('marker')
@@ -105,11 +105,11 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         .attr('markerWidth', 6)
         .attr('markerHeight', 6)
         .attr('orient', 'auto');
-      
+
       arrowMarker.append('path')
         .attr('d', 'M0,-5L10,0L0,5')
         .attr('fill', '#94a3b8');
-      
+
       const linkGroup = g.append('g').attr('stroke', '#94a3b8').attr('stroke-opacity', 0.6);
       const nodeGroup = g.append('g');
       const zoom = d3.zoom()
@@ -144,7 +144,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
           if (isIllicit) {
             return '#ef4444'; // red for illicit addresses
           }
-          
+
           if (d.type === 'address') {
             if (d.balance > 0) return '#10b981'; // green for addresses with balance
             return '#6b7280'; // gray for addresses without balance
@@ -158,7 +158,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
           if (isIllicit) {
             return '#dc2626'; // darker red stroke for illicit addresses
           }
-          
+
           if (d.type === 'address' && d.balance > 0) return '#059669';
           if (d.type === 'transaction') return '#1d4ed8';
           return '#111827';
@@ -181,19 +181,19 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
             d.fy = null;
           })
         );
-      
+
       // Add tooltips with rich information
       nodes.append('title').text(d => {
         const isIllicit = illicitAddresses.some(illicit => illicit.address === d.id);
         let tooltip = `${d.label || d.id}\n`;
-        
+
         if (isIllicit) {
           const illicitData = illicitAddresses.find(illicit => illicit.address === d.id);
           tooltip += `🚨 ILLICIT ADDRESS 🚨\n`;
           tooltip += `Risk Level: ${illicitData.risk_level?.toUpperCase()}\n`;
           tooltip += `Confidence: ${(illicitData.confidence * 100).toFixed(1)}%\n`;
           tooltip += `Sources: ${illicitData.sources.join(', ')}\n`;
-          
+
           if (illicitData.illicit_activity_analysis) {
             tooltip += `Primary Activity: ${illicitData.illicit_activity_analysis.primary_activity_type?.replace(/_/g, ' ').toUpperCase()}\n`;
             if (illicitData.illicit_activity_analysis.secondary_activities?.length > 0) {
@@ -204,16 +204,16 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
             }
           }
         }
-        
+
         if (d.type === 'address') {
           tooltip += `Type: Address\nBalance: ${(d.balance || 0) / 100000000} BTC\nTransactions: ${d.transaction_count || 0}`;
         } else if (d.type === 'transaction') {
           tooltip += `Type: Transaction\nValue: ${(d.total_input_value || 0) / 100000000} BTC\nFee: ${(d.fee || 0) / 100000000} BTC`;
         }
-        
+
         return tooltip;
       });
-      
+
       nodes.on('click', (_, d) => {
         if (onNodeClick) onNodeClick(d);
       });
@@ -291,21 +291,54 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
   }, []);
 
   const resetGraph = useCallback(() => {
-    if (!graphRef.current) return;
     try {
-      const nodes = graphRef.current.nodes.map(n => ({
-        ...n,
-        color: (graphData.nodes?.find(nd => nd.id === n.id)?.color) || '#6366f1',
-        x: graphData.nodes?.find(nd => nd.id === n.id)?.x ?? Math.random() * 1000,
-        y: graphData.nodes?.find(nd => nd.id === n.id)?.y ?? Math.random() * 1000
-      }));
-      graphRef.current = { nodes, edges: graphRef.current.edges };
-      initializeD3(graphRef.current);
-      setCommunities(null);
-      logger.info('Graph reset to original state');
+      logger.debug('Initializing graph with data', {
+        nodes: graphData.nodes?.length || 0,
+        edges: graphData.edges?.length || 0
+      });
+      const nodes = (graphData.nodes || [])
+        .filter(n => n && typeof n.id === 'string')
+        .map(n => ({
+          id: n.id,
+          label: n.label || n.id,
+          size: 8,
+          color: n.color || '#6366f1',
+          x: n.x ?? Math.random() * 1000,
+          y: n.y ?? Math.random() * 1000,
+          type: 'circle',
+          ...Object.fromEntries(
+            Object.entries(n).filter(([key, value]) => {
+              const exclude = ['type', 'id', 'label', 'size', 'color', 'x', 'y'];
+              return !exclude.includes(key) && value !== undefined && value !== null && typeof value !== 'function';
+            })
+          )
+        }));
+      const edges = (graphData.edges || [])
+        .filter(e => e && e.source && e.target && e.source !== e.target)
+        .map(e => ({
+          source: e.source,
+          target: e.target,
+          weight: e.weight || 1,
+          color: e.color || '#94a3b8',
+          size: e.size || 1,
+          type: 'line',
+          ...Object.fromEntries(
+            Object.entries(e).filter(([key, value]) => {
+              const exclude = ['source', 'target', 'weight', 'color', 'size', 'type', 'id'];
+              return !exclude.includes(key) && value !== undefined && value !== null && typeof value !== 'function';
+            })
+          )
+        }));
+      graphRef.current = { nodes, edges };
+      logger.info('Graph initialized successfully', {
+        nodeCount: nodes.length,
+        edgeCount: edges.length
+      });
+      return graphRef.current;
     } catch (err) {
-      logger.error('Failed to reset graph', err);
-      setError(`Reset failed: ${err.message}`);
+      logger.error('Failed to initialize graph', err);
+      setError(`Graph initialization failed: ${err.message}`);
+      return null;
     }
   }, [graphData, initializeD3]);
 
@@ -317,7 +350,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         logger.warn('No SVG element found for export');
         return;
       }
-      
+
       // Get the SVG element and save using saveSvgAsPng.js
       saveSvgAsPng(svgElement, "chainbreak_graph.png", {
         backgroundColor: '#111827', // Match the dark background
@@ -325,7 +358,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         width: svgElement.clientWidth,
         height: svgElement.clientHeight
       });
-      
+
       logger.info('Graph exported as PNG image successfully');
     } catch (err) {
       logger.error('Failed to export graph as image', err);
@@ -365,7 +398,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
 
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
-    
+
     if (!document.fullscreenElement) {
       containerRef.current.requestFullscreen().then(() => {
         setIsFullscreen(true);
@@ -422,7 +455,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
-      
+
       if (svgRef.current) {
         setTimeout(() => {
           try {
@@ -444,10 +477,10 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         });
       }
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('keydown', handleKeyDown);
@@ -558,7 +591,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
           <Image className="w-4 h-4" />
           Export PNG
         </motion.button>
-        
+
         {/* Zoom controls */}
         <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-gray-700">
           <motion.button
@@ -589,33 +622,32 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
             <Minus className="w-4 h-4" />
           </motion.button>
         </div>
-        
+
         {/* Fullscreen toggle */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={toggleFullscreen}
           disabled={!containerReady}
-          className={`flex items-center gap-2 px-3 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2 ${
-            isFullscreen 
-              ? 'bg-red-600 hover:bg-red-700 border-2 border-red-400' 
-              : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
+          className={`flex items-center gap-2 px-3 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2 ${isFullscreen
+            ? 'bg-red-600 hover:bg-red-700 border-2 border-red-400'
+            : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
         >
           {isFullscreen ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
           {isFullscreen ? 'Exit Fullscreen (ESC)' : 'Fullscreen'}
         </motion.button>
       </div>
-      
 
 
-      
+
+
       <div
         ref={containerRef}
         className="w-full h-full bg-gray-900 rounded-lg overflow-hidden"
         style={{ minHeight: '400px' }}
       />
-      
+
       {!containerReady && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 rounded-lg z-20">
           <div className="text-center">

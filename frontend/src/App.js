@@ -27,7 +27,7 @@ const App = () => {
     try {
       logger.info('Checking backend mode...');
       const response = await chainbreakAPI.getBackendMode();
-      
+
       if (response.success) {
         setBackendMode(response.data);
         logger.info('Backend mode retrieved', response.data);
@@ -37,10 +37,10 @@ const App = () => {
       }
     } catch (err) {
       logger.error('Backend mode check failed', err);
-      const errorMsg = err.response?.status === 404 ? 
+      const errorMsg = err.response?.status === 404 ?
         'Backend not found (404) - check if server is running on http://localhost:5000' :
         `Backend mode check failed: ${err.message}`;
-      
+
       setError(errorMsg);
       toast.error(errorMsg);
       return false;
@@ -51,7 +51,7 @@ const App = () => {
     try {
       logger.info('Checking system status...');
       const response = await chainbreakAPI.getSystemStatus();
-      
+
       if (response.success) {
         setSystemStatus(response.data);
         logger.info('System status retrieved', response.data);
@@ -71,7 +71,7 @@ const App = () => {
     try {
       logger.info('Loading available graphs...');
       const response = await chainbreakAPI.listGraphs();
-      
+
       if (response.success) {
         setAvailableGraphs(response.files || []);
         logger.info('Available graphs loaded', { count: response.files?.length || 0 });
@@ -90,9 +90,9 @@ const App = () => {
   const initializeApp = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
+
     logger.info('Starting app initialization...');
-    
+
     try {
       const modeCheck = await checkBackendMode();
       if (!modeCheck) {
@@ -112,7 +112,7 @@ const App = () => {
 
       logger.info('App initialization completed successfully');
       toast.success('ChainBreak initialized successfully');
-      
+
     } catch (err) {
       logger.error('App initialization failed', err);
       const errorMsg = `App initialization failed: ${err.message}`;
@@ -127,23 +127,23 @@ const App = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       logger.info('Fetching graph for address', { address, txLimit });
       toast.loading('Fetching transaction data...');
-      
+
       const response = await chainbreakAPI.fetchAndSaveGraph(address, txLimit);
-      
+
       if (response.success) {
-        logger.info('Graph fetched successfully', { 
-          file: response.file, 
-          meta: response.meta 
+        logger.info('Graph fetched successfully', {
+          file: response.file,
+          meta: response.meta
         });
-        
+
         toast.dismiss();
         toast.success('Graph data fetched successfully!');
-        
+
         await loadAvailableGraphs();
-        
+
         if (response.file) {
           const graphResponse = await chainbreakAPI.getGraph(response.file);
           setCurrentGraph(graphResponse);
@@ -167,19 +167,19 @@ const App = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       logger.info('Loading selected graph', { graphName });
-      
+
       const response = await chainbreakAPI.getGraph(graphName);
       setCurrentGraph(response);
       setActiveTab('graph');
       setSelectedNode(null);
-      
-      logger.info('Graph loaded successfully', { 
-        nodes: response.nodes?.length || 0, 
-        edges: response.edges?.length || 0 
+
+      logger.info('Graph loaded successfully', {
+        nodes: response.nodes?.length || 0,
+        edges: response.edges?.length || 0
       });
-      
+
       toast.success('Graph loaded successfully!');
     } catch (err) {
       logger.error('Failed to load selected graph', err);
@@ -266,26 +266,16 @@ const App = () => {
               <h1 className="text-2xl font-bold text-white">ChainBreak</h1>
               {backendMode && (
                 <div className="flex items-center space-x-2 ml-4">
-                  <div className={`w-2 h-2 rounded-full ${
-                    backendMode.neo4j_available ? 'bg-green-500' : 'bg-yellow-500'
-                  }`} />
+                  <div className={`w-2 h-2 rounded-full ${backendMode.neo4j_available ? 'bg-green-500' : 'bg-yellow-500'
+                    }`} />
                   <span className="text-sm text-gray-300">
                     {backendMode.backend_mode === 'neo4j' ? 'Neo4j' : 'JSON'} Mode
                   </span>
                 </div>
               )}
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="flex items-center space-x-2 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 disabled:opacity-50 transition-colors"
-              >
-                <Activity className="w-4 h-4" />
-                <span>Refresh</span>
-              </button>
-            </div>
+
+
           </div>
         </div>
       </header>
@@ -294,19 +284,19 @@ const App = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1 space-y-6">
             <AddressInput onSubmit={handleAddressSubmit} isLoading={isLoading} />
-            
-            <SystemStatus 
-              backendMode={backendMode} 
-              systemStatus={systemStatus} 
+
+            <SystemStatus
+              backendMode={backendMode}
+              systemStatus={systemStatus}
             />
-            
+
             <GraphList
               graphs={availableGraphs}
               onGraphSelect={handleGraphSelect}
               onRefresh={loadAvailableGraphs}
               isLoading={isLoading}
             />
-            
+
             <ThreatIntelligencePanel
               graphData={currentGraph}
               onThreatIntelUpdate={handleThreatIntelUpdate}
@@ -337,7 +327,7 @@ const App = () => {
                     illicitAddresses={threatIntelData?.illicitAddresses || []}
                   />
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center flex flex-col items-center justify-center h-full">
                     <Bitcoin className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-400 mb-2">No Graph Selected</h3>
                     <p className="text-gray-500">Enter a Bitcoin address to fetch and visualize the transaction graph</p>
