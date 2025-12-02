@@ -259,7 +259,7 @@ const App = () => {
       />
 
       <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-0 sm:px-2 lg:px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
               <Bitcoin className="w-8 h-8 text-blue-500" />
@@ -290,7 +290,7 @@ const App = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1600px] mx-auto px-0 sm:px-2 lg:px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1 space-y-6">
             <AddressInput onSubmit={handleAddressSubmit} isLoading={isLoading} />
@@ -328,12 +328,12 @@ const App = () => {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-6 h-[750px]">
                 {currentGraph ? (
                   <GraphRenderer
                     graphData={currentGraph}
                     onNodeClick={handleNodeClick}
-                    className="w-full"
+                    className="w-full h-full"
                     illicitAddresses={threatIntelData?.illicitAddresses || []}
                   />
                 ) : (

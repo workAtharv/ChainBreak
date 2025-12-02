@@ -607,53 +607,12 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
         </motion.button>
       </div>
       
-      <div className="absolute top-4 right-4 z-10 space-y-2">
-        {/* Legend */}
-        <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-gray-700/50">
-          <h4 className="text-sm font-semibold text-white mb-3">Legend</h4>
-          <div className="space-y-2 text-xs">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-gray-300">Address (with balance)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-              <span className="text-gray-300">Address (no balance)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-gray-300">🚨 Illicit Address</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-gray-300">Transaction</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-0.5 bg-green-500"></div>
-              <span className="text-gray-300">Incoming flow</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-0.5 bg-red-500"></div>
-              <span className="text-gray-300">Outgoing flow</span>
-            </div>
-          </div>
-        </div>
 
-        {communities && (
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <p className="text-sm font-medium text-gray-700">
-              Communities: {new Set(Object.values(communities)).size}
-            </p>
-            <p className="text-xs text-gray-500">
-              Nodes: {Object.keys(communities).length}
-            </p>
-          </div>
-        )}
-      </div>
+
       
       <div
         ref={containerRef}
-        className="w-full h-96 bg-gray-900 rounded-lg overflow-hidden"
+        className="w-full h-full bg-gray-900 rounded-lg overflow-hidden"
         style={{ minHeight: '400px' }}
       />
       

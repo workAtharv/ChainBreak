@@ -1,10 +1,10 @@
 neo4j:
   uri: "bolt://localhost:7687"
   username: "neo4j"
-  password: "password"
+  password: "euclid"
 
 blockcypher:
-  api_key: "your_api_key_here"  # Replace with your new BlockCypher API key
+  api_key: "b79363a6-836a-493d-a728-370101898161"  # Replace with your new BlockCypher API key
   timeout: 30
 
 analysis:
