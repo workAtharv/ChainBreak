@@ -63,3 +63,6 @@ sqlalchemy
 # API documentation
 flask-restx
 swagger-ui-bundle
+
+# Community detection
+python-louvain

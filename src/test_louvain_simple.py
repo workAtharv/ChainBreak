@@ -1,5 +1,5 @@
 """
-Test script for Louvain Community Detection Algorithm
+Test script for Louvain Community Detection Algorithm (No Visualization)
 This script tests the Louvain algorithm on Bitcoin transaction graphs
 and can be used as a reference for backend integration.
 """
@@ -8,7 +8,6 @@ import json
 import os
 import networkx as nx
 import community.community_louvain as community_louvain
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 
@@ -41,7 +40,7 @@ def run_louvain_algorithm(graph_data, resolution=1.0, weight_attribute='weight')
             - communities: {community_id: [node_ids]}
             - modularity: Quality metric of the partition
             - num_communities: Total number of communities found
-            - graph: NetworkX graph object (for visualization)
+            - graph: NetworkX graph object
     """
     # Build NetworkX graph (undirected for Louvain)
     G = nx.Graph()
@@ -122,58 +121,27 @@ def print_community_results(results):
         print()
 
 
-def visualize_communities(results, save_path=None):
+def export_results_to_json(results, output_path):
     """
-    Visualize the graph with communities color-coded.
+    Export community detection results to JSON format.
+    This format can be used by the frontend to visualize communities.
     
     Args:
         results (dict): Results from run_louvain_algorithm
-        save_path (str, optional): Path to save the visualization
+        output_path (str): Path to save the JSON output
     """
-    G = results['graph']
-    partition = results['partition']
+    # Prepare data for JSON export (exclude NetworkX graph object)
+    export_data = {
+        'partition': results['partition'],
+        'communities': {str(k): v for k, v in results['communities'].items()},
+        'modularity': results['modularity'],
+        'num_communities': results['num_communities']
+    }
     
-    # Create layout
-    pos = nx.spring_layout(G, k=0.5, iterations=50)
+    with open(output_path, 'w') as f:
+        json.dump(export_data, f, indent=2)
     
-    # Create color map
-    num_communities = results['num_communities']
-    cmap = plt.cm.get_cmap('tab10' if num_communities <= 10 else 'viridis', num_communities)
-    
-    # Create figure
-    plt.figure(figsize=(14, 10))
-    
-    # Draw nodes colored by community
-    node_colors = [partition[node] for node in G.nodes()]
-    nx.draw_networkx_nodes(
-        G, pos,
-        node_color=node_colors,
-        node_size=500,
-        cmap=cmap,
-        alpha=0.9
-    )
-    
-    # Draw edges
-    nx.draw_networkx_edges(G, pos, alpha=0.3, width=1.5)
-    
-    # Draw labels
-    labels = nx.get_node_attributes(G, 'label')
-    nx.draw_networkx_labels(G, pos, labels, font_size=8, font_weight='bold')
-    
-    plt.title(
-        f"Bitcoin Transaction Communities (Louvain)\n"
-        f"{results['num_communities']} communities, Modularity: {results['modularity']:.4f}",
-        fontsize=14,
-        fontweight='bold'
-    )
-    plt.axis('off')
-    plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Visualization saved to: {save_path}")
-    
-    plt.show()
+    print(f"Results exported to: {output_path}")
 
 
 def main():
@@ -183,9 +151,10 @@ def main():
     project_root = script_dir.parent
     
     # Path to test graph
-    graph_file = project_root / 'data' / 'graph' / 'example1.json'
+    graph_file = project_root / 'data' / 'graph' / 'graph_bc1qxy2kgdyg.json'
     
     print(f"Loading graph from: {graph_file}")
+    print()
     
     if not graph_file.exists():
         print(f"ERROR: Graph file not found at {graph_file}")
@@ -200,12 +169,14 @@ def main():
     # Run Louvain algorithm
     print("Running Louvain algorithm...")
     results = run_louvain_algorithm(graph_data, resolution=1.0)
+    print()
     
     # Print results
     print_community_results(results)
     
-    # Visualize (optional - comment out if you don't want the plot)
-    visualize_communities(results)
+    # Export results to JSON
+    output_file = project_root / 'data' / 'graph' / 'louvain_results.json'
+    export_results_to_json(results, output_file)
     
     # Return results for potential further processing
     return results
