@@ -151,7 +151,7 @@ def main():
     project_root = script_dir.parent
     
     # Path to test graph
-    graph_file = project_root / 'data' / 'graph' / 'graph_bc1qxy2kgdyg.json'
+    graph_file = project_root / 'data' / 'graph' / 'graph_1A1zP1eP5QGe.json'
     
     print(f"Loading graph from: {graph_file}")
     print()
@@ -174,9 +174,10 @@ def main():
     # Print results
     print_community_results(results)
     
-    # Export results to JSON
-    output_file = project_root / 'data' / 'graph' / 'louvain_results.json'
-    export_results_to_json(results, output_file)
+    # Optional: Export results to JSON (commented out by default)
+    # Uncomment the lines below if you want to save results to a file
+    # output_file = project_root / 'data' / 'graph' / 'louvain_results.json'
+    # export_results_to_json(results, output_file)
     
     # Return results for potential further processing
     return results

@@ -473,6 +473,96 @@ def check_graph_illicit_addresses():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+@app.route("/api/louvain", methods=["POST"])
+def run_louvain_community_detection():
+    """
+    Run Louvain community detection algorithm on graph data.
+    
+    Request body:
+    {
+        "nodes": [{"id": "...", "label": "...", "type": "..."}],
+        "edges": [{"source": "...", "target": "...", "value": 123}],
+        "resolution": 1.0  // optional, default 1.0
+    }
+    
+    Response:
+    {
+        "success": true,
+        "data": {
+            "partition": {"node_id": community_id, ...},
+            "communities": {"0": ["node1", "node2"], "1": [...]},
+            "modularity": 0.4523,
+            "num_communities": 3
+        }
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        # Validate input
+        if not data:
+            return jsonify({"success": False, "error": "Invalid JSON data"}), 400
+        
+        if "nodes" not in data or "edges" not in data:
+            return jsonify({"success": False, "error": "Missing 'nodes' or 'edges' in request"}), 400
+        
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+        
+        if len(nodes) == 0:
+            return jsonify({"success": False, "error": "Graph must have at least one node"}), 400
+        
+        if len(edges) == 0:
+            return jsonify({"success": False, "error": "Graph must have at least one edge"}), 400
+        
+        resolution = data.get("resolution", 1.0)
+        
+        # Validate resolution parameter
+        if not isinstance(resolution, (int, float)) or resolution <= 0:
+            return jsonify({"success": False, "error": "Resolution must be a positive number"}), 400
+        
+        logger.info(f"Running Louvain algorithm on graph with {len(nodes)} nodes and {len(edges)} edges")
+        
+        # Import the Louvain function
+        try:
+            from .test_louvain_simple import run_louvain_algorithm
+        except ImportError:
+            logger.error("Failed to import run_louvain_algorithm - test_louvain_simple.py not found")
+            return jsonify({"success": False, "error": "Louvain algorithm not available"}), 500
+        
+        # Prepare graph data
+        graph_data = {
+            "nodes": nodes,
+            "edges": edges
+        }
+        
+        # Run Louvain algorithm
+        try:
+            results = run_louvain_algorithm(graph_data, resolution=resolution)
+        except Exception as e:
+            logger.error(f"Louvain algorithm execution failed: {e}")
+            logger.error(traceback.format_exc())
+            return jsonify({"success": False, "error": f"Algorithm execution failed: {str(e)}"}), 500
+        
+        # Format response (remove NetworkX graph object)
+        response_data = {
+            "partition": results["partition"],
+            "communities": {str(k): v for k, v in results["communities"].items()},
+            "modularity": results["modularity"],
+            "num_communities": results["num_communities"]
+        }
+        
+        logger.info(f"Louvain completed: {results['num_communities']} communities, modularity={results['modularity']:.4f}")
+        
+        return jsonify({"success": True, "data": response_data}), 200
+        
+    except Exception as e:
+        logger.error(f"Error in Louvain endpoint: {e}")
+        logger.error(traceback.format_exc())
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+
+
 @app.errorhandler(404)
 def not_found(error):
     logger.warning(f"404 error: {request.url}")
