@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 # API endpoint
-API_URL = "http://localhost:5000/api/louvain"
+API_URL = "http://localhost:5001/api/louvain"
 
 def test_louvain_endpoint():
     """Test the Louvain API endpoint with sample graph data"""

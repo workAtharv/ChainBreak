@@ -89,13 +89,13 @@ python app.py
 **Solutions:**
 ```bash
 # Check if API is running
-curl http://localhost:5000/api/status
+curl http://localhost:5001/api/status
 
 # Start API server
 python start_system.py --mode api-only
 
 # Check frontend accessibility
-curl http://localhost:5000/frontend/index.html
+curl http://localhost:5001/frontend/index.html
 ```
 
 ## 📊 Understanding System Status
@@ -131,7 +131,7 @@ docker-compose logs -f neo4j
 ### Test Individual Components
 ```bash
 # Test API directly
-curl -X POST http://localhost:5000/api/analyze \
+curl -X POST http://localhost:5001/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"}'
 
@@ -185,7 +185,7 @@ When Neo4j is unavailable, these features still work:
 1. **Quick Start (No Neo4j):**
    ```bash
    python start_system.py --mode api-only
-   # Open http://localhost:5000/frontend/index.html
+   # Open http://localhost:5001/frontend/index.html
    ```
 
 2. **Full System (With Neo4j):**
@@ -207,6 +207,6 @@ When Neo4j is unavailable, these features still work:
 1. Run the health check: `python health_check.py`
 2. Check the logs: `tail -f chainbreak.log`
 3. Verify Neo4j is running: `docker ps | grep neo4j`
-4. Test API: `curl http://localhost:5000/api/status`
+4. Test API: `curl http://localhost:5001/api/status`
 
 The system is now designed to be resilient to Neo4j failures while maintaining core functionality!

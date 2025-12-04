@@ -167,7 +167,7 @@ class Neo4jIntegrationTester:
             
             # Test status endpoint
             try:
-                response = requests.get("http://localhost:5000/api/status", timeout=10)
+                response = requests.get("http://localhost:5001/api/status", timeout=10)
                 if response.status_code == 200:
                     logger.info("✅ API status endpoint working!")
                 else:

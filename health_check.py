@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 import time
 
-def check_api_status(base_url="http://localhost:5000"):
+def check_api_status(base_url="http://localhost:5001"):
     """Check if the API is responding"""
     try:
         response = requests.get(f"{base_url}/api/status", timeout=10)
@@ -78,7 +78,7 @@ def check_neo4j_direct(uri="bolt://localhost:7687", username="neo4j", password="
             "timestamp": datetime.now().isoformat()
         }
 
-def check_frontend(base_url="http://localhost:5000"):
+def check_frontend(base_url="http://localhost:5001"):
     """Check if frontend is accessible"""
     try:
         response = requests.get(f"{base_url}/frontend/index.html", timeout=10)

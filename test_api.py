@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_api_endpoints():
-    base_url = "http://localhost:5000"
+    base_url = "http://localhost:5001"
     
     print("Testing API endpoints...")
     

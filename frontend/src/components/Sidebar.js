@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Download, 
-  Upload, 
-  RefreshCw, 
-  FileText, 
+import {
+  Download,
+  Upload,
+  RefreshCw,
+  FileText,
   Search,
   Play,
   FolderOpen,
@@ -14,17 +14,17 @@ import {
 } from 'lucide-react';
 import logger from '../utils/logger';
 
-const Sidebar = ({ 
-  availableGraphs, 
-  onFetchGraph, 
-  onLoadGraph, 
-  onRefreshGraphs, 
+const Sidebar = ({
+  availableGraphs,
+  onFetchGraph,
+  onLoadGraph,
+  onRefreshGraphs,
   onRunLouvain,
   isLoading,
-  backendMode 
+  backendMode
 }) => {
   const [address, setAddress] = useState('');
-  const [txLimit, setTxLimit] = useState(50);
+  const [txLimit, setTxLimit] = useState(1000);
   const [selectedGraph, setSelectedGraph] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -82,7 +82,7 @@ const Sidebar = ({
     >
       <div className="p-6 border-b border-dark-700">
         <h2 className="text-lg font-semibold text-dark-100 mb-4">Graph Controls</h2>
-        
+
         {getBackendWarning()}
 
         <div className="space-y-4">
@@ -107,9 +107,9 @@ const Sidebar = ({
             <input
               type="number"
               value={txLimit}
-              onChange={(e) => setTxLimit(Math.max(1, Math.min(200, parseInt(e.target.value) || 50)))}
+              onChange={(e) => setTxLimit(Math.max(1, Math.min(1000, parseInt(e.target.value) || 1000)))}
               min="1"
-              max="200"
+              max="1000"
               className="input-field w-full"
               disabled={isLoading}
             />
@@ -197,7 +197,7 @@ const Sidebar = ({
             <Play className="w-4 h-4" />
             <span>Run Louvain Algorithm</span>
           </button>
-          
+
           <p className="text-xs text-dark-400 mt-2 text-center">
             Detects communities in the loaded graph
           </p>
@@ -210,7 +210,7 @@ const Sidebar = ({
           >
             Advanced Options
           </button>
-          
+
           <AnimatePresence>
             {showAdvanced && (
               <motion.div

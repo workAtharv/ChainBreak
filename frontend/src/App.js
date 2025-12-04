@@ -38,7 +38,7 @@ const App = () => {
     } catch (err) {
       logger.error('Backend mode check failed', err);
       const errorMsg = err.response?.status === 404 ?
-        'Backend not found (404) - check if server is running on http://localhost:5000' :
+        'Backend not found (404) - check if server is running on http://localhost:5001' :
         `Backend mode check failed: ${err.message}`;
 
       setError(errorMsg);
@@ -229,7 +229,7 @@ const App = () => {
           <h2 className="text-xl font-semibold text-red-400 mb-2">Connection Failed</h2>
           <p className="text-red-300 mb-4">{error}</p>
           <div className="space-y-2 text-sm text-red-200">
-            <p>• Ensure the backend server is running on http://localhost:5000</p>
+            <p>• Ensure the backend server is running on http://localhost:5001</p>
             <p>• Check that all required dependencies are installed</p>
             <p>• Verify the backend configuration</p>
           </div>

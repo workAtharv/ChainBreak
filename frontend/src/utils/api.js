@@ -2,7 +2,7 @@
 import axios from 'axios';
 import logger from './logger';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -16,14 +16,14 @@ api.interceptors.request.use(
   (config) => {
     const startTime = performance.now();
     config.metadata = { startTime };
-    
+
     logger.debug(`API Request: ${config.method?.toUpperCase()} ${config.url}`, {
       method: config.method,
       url: config.url,
       data: config.data,
       params: config.params
     });
-    
+
     return config;
   },
   (error) => {
@@ -36,7 +36,7 @@ api.interceptors.response.use(
   (response) => {
     const endTime = performance.now();
     const duration = endTime - response.config.metadata.startTime;
-    
+
     logger.logAPIRequest(
       response.config.method,
       response.config.url,
@@ -44,25 +44,25 @@ api.interceptors.response.use(
       duration,
       { data: response.data }
     );
-    
+
     return response;
   },
   (error) => {
     const endTime = performance.now();
-    const duration = error.config?.metadata?.startTime ? 
+    const duration = error.config?.metadata?.startTime ?
       endTime - error.config.metadata.startTime : 0;
-    
+
     logger.logAPIRequest(
       error.config?.method || 'UNKNOWN',
       error.config?.url || 'UNKNOWN',
       error.response?.status || 0,
       duration,
-      { 
+      {
         error: error.message,
-        response: error.response?.data 
+        response: error.response?.data
       }
     );
-    
+
     return Promise.reject(error);
   }
 );
@@ -110,7 +110,7 @@ export const apiService = {
 
     if (error.response) {
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 400:
           errorMessage = data.error || 'Bad request';
@@ -139,7 +139,7 @@ export const apiService = {
         default:
           errorMessage = data.error || `HTTP ${status} error`;
       }
-      
+
       errorDetails = {
         status,
         data,
@@ -168,7 +168,7 @@ export const apiService = {
     apiError.originalError = error;
 
     logger.error(`API Error: ${errorMessage}`, apiError, errorDetails);
-    
+
     return apiError;
   }
 };

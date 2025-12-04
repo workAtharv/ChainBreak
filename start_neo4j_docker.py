@@ -197,7 +197,7 @@ class Neo4jDockerManager:
         print("\nURLs:")
         print(f"Neo4j Browser: http://localhost:7474")
         print(f"Neo4j Bolt: bolt://localhost:7687")
-        print(f"ChainBreak API: http://localhost:5000")
+        print(f"ChainBreak API: http://localhost:5001")
         print(f"ChainBreak Frontend: http://localhost:3000")
         
         print("\nCredentials:")

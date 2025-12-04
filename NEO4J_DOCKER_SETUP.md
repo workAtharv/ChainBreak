@@ -35,7 +35,7 @@ docker-compose -f docker-compose-neo4j.yml --profile app up -d
 ### 3. Access Services
 
 - **Neo4j Browser**: http://localhost:7474
-- **ChainBreak API**: http://localhost:5000
+- **ChainBreak API**: http://localhost:5001
 - **ChainBreak Frontend**: http://localhost:3000
 
 **Credentials:**
@@ -51,7 +51,7 @@ docker-compose -f docker-compose-neo4j.yml --profile app up -d
 - **Memory**: 2GB heap, 1GB page cache
 
 ### ChainBreak Application
-- **Ports**: 5000 (API), 3000 (Frontend)
+- **Ports**: 5001 (API), 3000 (Frontend)
 - **Environment**: Production-ready with security
 - **Dependencies**: Waits for Neo4j to be healthy
 

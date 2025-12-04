@@ -40,10 +40,10 @@ docker-compose logs -f chainbreak
 
 ```bash
 # Check API status
-curl http://localhost:5000/api/status
+curl http://localhost:5001/api/status
 
 # Analyze a test address
-curl -X POST http://localhost:5000/api/analyze \
+curl -X POST http://localhost:5001/api/analyze \
   -H "Content-Type: application/json" \
   -d '{"address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"}'
 ```
@@ -88,8 +88,8 @@ python app.py --analyze 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
 
 ## 📱 Access Points
 
-- **API**: http://localhost:5000
-- **API Docs**: http://localhost:5000/ (built-in documentation)
+- **API**: http://localhost:5001
+- **API Docs**: http://localhost:5001/ (built-in documentation)
 - **Neo4j Browser**: http://localhost:7474 (username: neo4j, password: password)
 
 ## 🧪 First Analysis
@@ -98,7 +98,7 @@ python app.py --analyze 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
 
 ```bash
 # Analyze a Bitcoin address
-curl -X POST http://localhost:5000/api/analyze \
+curl -X POST http://localhost:5001/api/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
@@ -173,7 +173,7 @@ python examples/basic_analysis.py
    ```bash
    # Change ports in docker-compose.yml
    ports:
-     - "5001:5000"  # Use port 5001 instead
+     - "5001:5001"  # Use port 5001 instead
    ```
 
 4. **Memory Issues**
@@ -198,7 +198,7 @@ docker-compose logs -f chainbreak
 
 ## 📈 Next Steps
 
-1. **Explore the API**: Visit http://localhost:5000 for interactive documentation
+1. **Explore the API**: Visit http://localhost:5001 for interactive documentation
 2. **Run Examples**: Try `python examples/basic_analysis.py`
 3. **Custom Analysis**: Modify `config.yaml` for your use case
 4. **Scale Up**: Adjust Neo4j memory and ChainBreak batch sizes
@@ -216,7 +216,7 @@ docker-compose logs -f chainbreak
 You've successfully set up ChainBreak when you can:
 
 ✅ Start the system with `docker-compose up -d`  
-✅ Access the API at http://localhost:5000  
+✅ Access the API at http://localhost:5001  
 ✅ Run a basic analysis on a Bitcoin address  
 ✅ View results with risk scores and anomaly detection  
 ✅ Export networks to Gephi format  

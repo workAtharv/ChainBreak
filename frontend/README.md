@@ -29,7 +29,7 @@ A modern, high-performance React-based frontend for the ChainBreak blockchain an
 
 - Node.js 16+ 
 - npm or yarn
-- ChainBreak backend running on port 5000
+- ChainBreak backend running on port 5001
 
 ### Installation
 
@@ -120,7 +120,7 @@ The frontend communicates with the ChainBreak backend through a comprehensive AP
 Create a `.env` file in the frontend directory:
 
 ```env
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:5001
 ```
 
 ### Tailwind CSS

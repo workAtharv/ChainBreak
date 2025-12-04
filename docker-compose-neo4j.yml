@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: chainbreak-app
     ports:
-      - "5000:5000"
+      - "5001:5001"
       - "3000:3000"
     environment:
       - NEO4J_URI=bolt://neo4j:7687

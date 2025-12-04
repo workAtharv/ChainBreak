@@ -50,7 +50,7 @@ if %errorlevel% equ 0 (
 REM Create .env file if it doesn't exist
 if not exist .env (
     echo 🔧 Creating .env file...
-    echo REACT_APP_API_URL=http://localhost:5000 > .env
+    echo REACT_APP_API_URL=http://localhost:5001 > .env
     echo ✅ .env file created with default API URL
 ) else (
     echo ✅ .env file already exists
@@ -58,11 +58,11 @@ if not exist .env (
 
 REM Check if backend is running
 echo 🔍 Checking backend connection...
-curl -s http://localhost:5000/api/status >nul 2>&1
+curl -s http://localhost:5001/api/status >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Backend is running on http://localhost:5000
+    echo ✅ Backend is running on http://localhost:5001
 ) else (
-    echo ⚠️  Backend is not running on http://localhost:5000
+    echo ⚠️  Backend is not running on http://localhost:5001
     echo    Please start the ChainBreak backend first:
     echo    python app.py --api
 )

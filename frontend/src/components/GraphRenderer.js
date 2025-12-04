@@ -7,9 +7,9 @@ import logger from '../utils/logger';
 import { Plus, Minus } from 'lucide-react';
 import { saveSvgAsPng } from 'save-svg-as-png';
 import toast from 'react-hot-toast';
-import runLouvainAlgorithm from './runLouvainAlgorithm_replacement';
 
 const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresses = [] }) => {
+  const wrapperRef = useRef(null);
   const containerRef = useRef(null);
   const svgRef = useRef(null);
   const simulationRef = useRef(null);
@@ -309,7 +309,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
       logger.info(`Sending graph data: ${graphData.nodes.length} nodes, ${graphData.edges.length} edges`);
 
       // Call backend API
-      const response = await fetch('http://localhost:5000/api/louvain', {
+      const response = await fetch('http://localhost:5001/api/louvain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(graphData)
@@ -377,7 +377,7 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
       toast.success(
         `Found ${data.num_communities} ${data.num_communities === 1 ? 'community' : 'communities'}! ` +
         `Modularity: ${modularityText} ${qualityText}`,
-        { duration: 5000 }
+        { duration: 5001 }
       );
 
       setIsLoading(false);
@@ -497,10 +497,10 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
   }, []);
 
   const toggleFullscreen = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!wrapperRef.current) return;
 
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => {
+      wrapperRef.current.requestFullscreen().then(() => {
         setIsFullscreen(true);
         logger.info('Entered fullscreen mode');
       }).catch(err => {
@@ -640,104 +640,148 @@ const GraphRenderer = ({ graphData, onNodeClick, className = '', illicitAddresse
     );
   }
 
-  return (
-    <div className={`relative ${className}`}>
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={runForceAtlas2}
-          disabled={isLoading || layoutRunning || !containerReady}
-          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading && layoutRunning ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-          {layoutRunning ? 'Running...' : 'Run Layout'}
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={runLouvainAlgorithm}
-          disabled={isLoading || !containerReady}
-          className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-          Run Louvain
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={resetGraph}
-          disabled={isLoading || !containerReady}
-          className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Reset
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={exportAsImage}
-          disabled={isLoading || !containerReady}
-          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <Image className="w-4 h-4" />
-          Export PNG
-        </motion.button>
+  const totalCommunities = communities?.num_communities || 0;
+  const modularityScore = typeof communities?.modularity === 'number'
+    ? communities.modularity.toFixed(3)
+    : null;
+  const largestCommunity = communities?.communities
+    ? Object.values(communities.communities).reduce((max, community) => {
+      return community.length > max ? community.length : max;
+    }, 0)
+    : null;
 
-        {/* Zoom controls */}
-        <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-gray-700">
+  return (
+    <div ref={wrapperRef} className={`relative ${className}`}>
+      {!isFullscreen && (
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={zoomIn}
-            disabled={!containerReady}
-            className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={runForceAtlas2}
+            disabled={isLoading || layoutRunning || !containerReady}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            {isLoading && layoutRunning ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+            {layoutRunning ? 'Running...' : 'Run Layout'}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={resetZoom}
-            disabled={!containerReady}
-            className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={runLouvainAlgorithm}
+            disabled={isLoading || !containerReady}
+            className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {Math.round(zoomLevel * 100)}%
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Play className="w-4 h-4" />
+            )}
+            Run Louvain
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={zoomOut}
-            disabled={!containerReady}
-            className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            onClick={resetGraph}
+            disabled={isLoading || !containerReady}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Minus className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={exportAsImage}
+            disabled={isLoading || !containerReady}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Image className="w-4 h-4" />
+            Export PNG
+          </motion.button>
+
+          {/* Zoom controls */}
+          <div className="flex flex-col gap-1 mt-2 pt-2 border-t border-gray-700">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={zoomIn}
+              disabled={!containerReady}
+              className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={resetZoom}
+              disabled={!containerReady}
+              className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {Math.round(zoomLevel * 100)}%
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={zoomOut}
+              disabled={!containerReady}
+              className="flex items-center justify-center p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Minus className="w-4 h-4" />
+            </motion.button>
+          </div>
+
+          {/* Fullscreen toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleFullscreen}
+            disabled={!containerReady}
+            className={`flex items-center gap-2 px-3 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2 ${isFullscreen
+              ? 'bg-red-600 hover:bg-red-700 border-2 border-red-400'
+              : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
+          >
+            {isFullscreen ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
+            {isFullscreen ? 'Exit Fullscreen (ESC)' : 'Fullscreen'}
           </motion.button>
         </div>
+      )}
 
-        {/* Fullscreen toggle */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={toggleFullscreen}
-          disabled={!containerReady}
-          className={`flex items-center gap-2 px-3 py-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2 ${isFullscreen
-            ? 'bg-red-600 hover:bg-red-700 border-2 border-red-400'
-            : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
+
+      {communities && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="absolute top-4 right-4 z-10 w-64 bg-gray-900/90 border border-purple-500/40 rounded-xl p-4 shadow-xl backdrop-blur"
         >
-          {isFullscreen ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
-          {isFullscreen ? 'Exit Fullscreen (ESC)' : 'Fullscreen'}
-        </motion.button>
-      </div>
+          <p className="text-xs uppercase tracking-wide text-purple-300 mb-1">Louvain Results</p>
+          <p className="text-sm text-gray-200 mb-4">
+            Community detection completed successfully.
+          </p>
+          <div className="space-y-2 text-sm text-gray-100">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Communities</span>
+              <span className="font-semibold text-white">{totalCommunities}</span>
+            </div>
+            {modularityScore && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Modularity</span>
+                <span className="font-semibold text-white">{modularityScore}</span>
+              </div>
+            )}
+            {largestCommunity !== null && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">Largest size</span>
+                <span className="font-semibold text-white">{largestCommunity} nodes</span>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
 
 
 

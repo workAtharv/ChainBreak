@@ -5,7 +5,7 @@
 
 set -e
 
-BASE_URL="http://localhost:5000"
+BASE_URL="http://localhost:5001"
 API_BASE="$BASE_URL/api"
 
 echo "🔍 ChainBreak Smoke Test"

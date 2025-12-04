@@ -41,8 +41,8 @@ def start_with_docker():
         subprocess.run(['docker-compose', 'ps'])
         
         print("\n🌐 Access points:")
-        print("   • API: http://localhost:5000")
-        print("   • Frontend: http://localhost:5000/frontend/index.html")
+        print("   • API: http://localhost:5001")
+        print("   • Frontend: http://localhost:5001/frontend/index.html")
         print("   • Neo4j Browser: http://localhost:7474")
         
         return True
@@ -61,7 +61,7 @@ def start_api_only():
         env['CHAINBREAK_NO_NEO4J'] = '1'
         
         # Start the API server
-        print("📡 Starting API server on http://localhost:5000")
+        print("📡 Starting API server on http://localhost:5001")
         subprocess.run([sys.executable, 'app.py'], env=env, check=True)
         
     except KeyboardInterrupt:
@@ -78,7 +78,7 @@ def start_full_system():
     
     try:
         # Start the API server
-        print("📡 Starting API server on http://localhost:5000")
+        print("📡 Starting API server on http://localhost:5001")
         subprocess.run([sys.executable, 'app.py'], check=True)
         
     except KeyboardInterrupt:

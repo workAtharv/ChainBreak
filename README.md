@@ -70,7 +70,7 @@
    ```
 
 4. **Access the system**
-   - API: http://localhost:5000
+   - API: http://localhost:5001
    - Neo4j Browser: http://localhost:7474
 
 ### Manual Installation
@@ -152,7 +152,7 @@ python app.py --verbose
 
 #### Analyze Single Address
 ```bash
-curl -X POST http://localhost:5000/api/analyze \
+curl -X POST http://localhost:5001/api/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
@@ -163,7 +163,7 @@ curl -X POST http://localhost:5000/api/analyze \
 
 #### Batch Analysis
 ```bash
-curl -X POST http://localhost:5000/api/analyze/batch \
+curl -X POST http://localhost:5001/api/analyze/batch \
   -H "Content-Type: application/json" \
   -d '{
     "addresses": [
@@ -176,7 +176,7 @@ curl -X POST http://localhost:5000/api/analyze/batch \
 
 #### Export to Gephi
 ```bash
-curl "http://localhost:5000/api/export/gephi?address=1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+curl "http://localhost:5001/api/export/gephi?address=1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
 ```
 
 ### Python API

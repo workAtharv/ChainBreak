@@ -1,318 +1,340 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ChainBreak Graph</title>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <style>
-      body {
-        margin: 0;
-        font-family: Inter, Arial, sans-serif;
-        background: #0b0f17;
-        color: #e8edf3;
-      }
-      header {
-        padding: 12px 16px;
-        border-bottom: 1px solid #1e2838;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .header-left {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-      }
-      .header-right {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .mode-indicator {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-      }
-      .mode-neo4j {
-        background: #10b981;
-        color: #064e3b;
-      }
-      .mode-json {
-        background: #f59e0b;
-        color: #78350f;
-      }
-      button,
-      select,
-      input {
-        background: #111827;
-        color: #e5e7eb;
-        border: 1px solid #374151;
-        border-radius: 6px;
-        padding: 8px 10px;
-      }
-      #container {
-        display: flex;
-        height: calc(100vh - 60px);
-      }
-      #left {
-        width: 360px;
-        border-right: 1px solid #1e2838;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      #right {
-        flex: 1;
-        position: relative;
-      }
-      #sigma-container {
-        position: absolute;
-        inset: 0;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .list {
-        height: 44vh;
-        overflow: auto;
-        border: 1px solid #1e2838;
-        border-radius: 6px;
-        padding: 6px;
-      }
-      .log {
-        height: 22vh;
-        overflow: auto;
-        border: 1px solid #1e2838;
-        border-radius: 6px;
-        padding: 6px;
-        background: #0f1623;
-      }
-      .badge {
-        display: inline-block;
-        padding: 2px 6px;
-        border: 1px solid #334155;
-        border-radius: 999px;
-        font-size: 12px;
-        text-decoration: none;
-        color: inherit;
-      }
-      .hint {
-        font-size: 12px;
-        color: #94a3b8;
-      }
-      .warning {
-        background: #fef3c7;
-        color: #92400e;
-        padding: 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        margin: 8px 0;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="header-left">
-        <div style="font-weight: 700">ChainBreak</div>
-        <a class="badge" href="/api/status" target="_blank">Status</a>
-        <a class="badge" href="/api/mode" target="_blank">Mode</a>
-      </div>
-      <div class="header-right">
-        <div id="modeIndicator" class="mode-indicator mode-json">JSON Mode</div>
-      </div>
-    </header>
-    <div id="container">
-      <div id="left">
-        <div id="modeWarning" class="warning" style="display: none">
-          Running in JSON mode - limited functionality available
-        </div>
-        <input id="address" placeholder="Bitcoin address" />
-        <div class="row">
-          <input id="tx_limit" type="number" min="1" max="200" value="50" />
-          <button id="fetchBtn">Fetch & Save Graph</button>
-        </div>
-        <div class="row">
-          <button id="refreshBtn">Refresh List</button>
-          <button id="runLouvainBtn">Run Louvain Algorithm</button>
-        </div>
-        <div class="row">
-          <button id="traceNodeBtn">Trace Selected Node</button>
-          <button id="clearTraceBtn">Clear Trace</button>
-        </div>
-        <div class="hint">
-          Click a node to select it. Use Trace to highlight connected nodes. Louvain can run without seed.
-        </div>
-        <div id="nodeInfo" class="hint" style="display: none; margin-top: 8px; padding: 8px; background: #1e2838; border-radius: 4px;">
-          <div><strong>Selected Node:</strong> <span id="selectedNodeId"></span></div>
-          <div><strong>Type:</strong> <span id="selectedNodeType"></span></div>
-          <div><strong>Connections:</strong> <span id="selectedNodeConnections"></span></div>
-        </div>
-        <div class="list" id="files"></div>
-        <div class="log" id="log"></div>
-      </div>
-      <div id="right">
-        <div id="sigma-container"></div>
-      </div>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChainBreak Graph</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: #0b0f17;
+      color: #e8edf3;
+    }
+
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e2838;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .mode-indicator {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .mode-neo4j {
+      background: #10b981;
+      color: #064e3b;
+    }
+
+    .mode-json {
+      background: #f59e0b;
+      color: #78350f;
+    }
+
+    button,
+    select,
+    input {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    #container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+
+    #left {
+      width: 360px;
+      border-right: 1px solid #1e2838;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #right {
+      flex: 1;
+      position: relative;
+    }
+
+    #sigma-container {
+      position: absolute;
+      inset: 0;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .list {
+      height: 44vh;
+      overflow: auto;
+      border: 1px solid #1e2838;
+      border-radius: 6px;
+      padding: 6px;
+    }
+
+    .log {
+      height: 22vh;
+      overflow: auto;
+      border: 1px solid #1e2838;
+      border-radius: 6px;
+      padding: 6px;
+      background: #0f1623;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      font-size: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .warning {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-left">
+      <div style="font-weight: 700">ChainBreak</div>
+      <a class="badge" href="/api/status" target="_blank">Status</a>
+      <a class="badge" href="/api/mode" target="_blank">Mode</a>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/graphology@0.25.4/dist/graphology.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/graphology-layout-forceatlas2@0.10.1/build/graphology-layout-forceatlas2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/graphology-layout@0.7.2/build/graphology-layout.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/graphology-utils@2.5.1/build/graphology-utils.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/graphology-communities-louvain@2.0.0/build/graphology-communities-louvain.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sigma@2.4.0/build/sigma.min.js"></script>
-    <script>
-      const $ = (s) => document.querySelector(s);
-      const log = (m) => {
-        $("#log").textContent += "\n" + new Date().toISOString() + " " + m;
-        $("#log").scrollTop = $("#log").scrollHeight;
-      };
-      let renderer = null,
-        graph = null,
-        selectedNode = null;
-      const palette = [
-        "#ef4444",
-        "#3b82f6",
-        "#22c55e",
-        "#eab308",
-        "#a855f7",
-        "#06b6d4",
-        "#f97316",
-        "#10b981",
-        "#f43f5e",
-        "#8b5cf6",
-        "#14b8a6",
-        "#f59e0b",
-      ];
+    <div class="header-right">
+      <div id="modeIndicator" class="mode-indicator mode-json">JSON Mode</div>
+    </div>
+  </header>
+  <div id="container">
+    <div id="left">
+      <div id="modeWarning" class="warning" style="display: none">
+        Running in JSON mode - limited functionality available
+      </div>
+      <input id="address" placeholder="Bitcoin address" />
+      <div class="row">
+        <input id="tx_limit" type="number" min="1" max="200" value="50" />
+        <button id="fetchBtn">Fetch & Save Graph</button>
+      </div>
+      <div class="row">
+        <button id="refreshBtn">Refresh List</button>
+        <button id="runLouvainBtn">Run Louvain Algorithm</button>
+      </div>
+      <div class="row">
+        <button id="traceNodeBtn">Trace Selected Node</button>
+        <button id="clearTraceBtn">Clear Trace</button>
+      </div>
+      <div class="hint">
+        Click a node to select it. Use Trace to highlight connected nodes. Louvain can run without seed.
+      </div>
+      <div id="nodeInfo" class="hint"
+        style="display: none; margin-top: 8px; padding: 8px; background: #1e2838; border-radius: 4px;">
+        <div><strong>Selected Node:</strong> <span id="selectedNodeId"></span></div>
+        <div><strong>Type:</strong> <span id="selectedNodeType"></span></div>
+        <div><strong>Connections:</strong> <span id="selectedNodeConnections"></span></div>
+      </div>
+      <div class="list" id="files"></div>
+      <div class="log" id="log"></div>
+    </div>
+    <div id="right">
+      <div id="sigma-container"></div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/graphology@0.25.4/dist/graphology.umd.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/graphology-layout-forceatlas2@0.10.1/build/graphology-layout-forceatlas2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/graphology-layout@0.7.2/build/graphology-layout.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/graphology-utils@2.5.1/build/graphology-utils.min.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/graphology-communities-louvain@2.0.0/build/graphology-communities-louvain.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sigma@2.4.0/build/sigma.min.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const log = (m) => {
+      $("#log").textContent += "\n" + new Date().toISOString() + " " + m;
+      $("#log").scrollTop = $("#log").scrollHeight;
+    };
+    let renderer = null,
+      graph = null,
+      selectedNode = null;
+    const palette = [
+      "#ef4444",
+      "#3b82f6",
+      "#22c55e",
+      "#eab308",
+      "#a855f7",
+      "#06b6d4",
+      "#f97316",
+      "#10b981",
+      "#f43f5e",
+      "#8b5cf6",
+      "#14b8a6",
+      "#f59e0b",
+    ];
 
-      async function checkBackendMode() {
-        try {
-          const response = await fetch("/api/mode");
-          const data = await response.json();
-          if (data.success) {
-            const mode = data.data.backend_mode;
-            const indicator = $("#modeIndicator");
-            const warning = $("#modeWarning");
+    async function checkBackendMode() {
+      try {
+        const response = await fetch("/api/mode");
+        const data = await response.json();
+        if (data.success) {
+          const mode = data.data.backend_mode;
+          const indicator = $("#modeIndicator");
+          const warning = $("#modeWarning");
 
-            if (mode === "neo4j") {
-              indicator.className = "mode-indicator mode-neo4j";
-              indicator.textContent = "Neo4j Mode";
-              warning.style.display = "none";
-            } else {
-              indicator.className = "mode-indicator mode-json";
-              indicator.textContent = "JSON Mode";
-              warning.style.display = "block";
-            }
-
-            log(`Backend mode: ${mode}`);
-          }
-        } catch (error) {
-          log(`Error checking backend mode: ${error.message}`);
-        }
-      }
-
-      async function listFiles() {
-        const r = await fetch("/api/graph/list");
-        const j = await r.json();
-        const el = $("#files");
-        el.innerHTML = "";
-        if (j.success) {
-          j.files.forEach((name) => {
-            const b = document.createElement("button");
-            b.textContent = name;
-            b.onclick = () => loadGraph(name);
-            el.appendChild(b);
-            el.appendChild(document.createElement("br"));
-          });
-          log("listed " + j.files.length + " graphs");
-        } else {
-          log("list error " + j.error);
-        }
-      }
-
-      async function fetchGraph() {
-        const address = $("#address").value.trim();
-        const tx_limit = parseInt($("#tx_limit").value || "50", 10);
-
-        // Enhanced input validation
-        if (!address) {
-          log("ERROR: Address is required");
-          showError("Please enter a Bitcoin address");
-          return;
-        }
-
-        // Basic Bitcoin address validation
-        const btcRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[a-z0-9]{39,59}$/;
-        if (!btcRegex.test(address)) {
-          log("ERROR: Invalid Bitcoin address format");
-          showError("Invalid Bitcoin address format");
-          return;
-        }
-
-        if (tx_limit < 1 || tx_limit > 200) {
-          log("ERROR: Transaction limit must be between 1 and 200");
-          showError("Transaction limit must be between 1 and 200");
-          return;
-        }
-
-        // Disable button during fetch
-        const fetchBtn = $("#fetchBtn");
-        const originalText = fetchBtn.textContent;
-        fetchBtn.textContent = "Fetching...";
-        fetchBtn.disabled = true;
-
-        try {
-          log(`Fetching graph for address: ${address.substring(0, 10)}... with limit ${tx_limit}`);
-
-          const response = await fetch("/api/graph/address", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ address, tx_limit }),
-          });
-
-          const data = await response.json();
-
-          if (response.ok && data.success) {
-            log(`SUCCESS: Graph saved as ${data.file}`);
-            log(`Stats: ${data.stats.nodes} nodes, ${data.stats.edges} edges`);
-            showSuccess(`Graph fetched successfully! ${data.stats.nodes} nodes, ${data.stats.edges} edges`);
-            await listFiles();
+          if (mode === "neo4j") {
+            indicator.className = "mode-indicator mode-neo4j";
+            indicator.textContent = "Neo4j Mode";
+            warning.style.display = "none";
           } else {
-            const errorMsg = data.error || `HTTP ${response.status}: ${response.statusText}`;
-            log(`ERROR: ${errorMsg}`);
-            showError(errorMsg);
-
-            // Handle specific error codes
-            if (response.status === 429) {
-              log("Rate limit exceeded - please wait before trying again");
-            } else if (response.status === 404) {
-              log("No transaction data found for this address");
-            } else if (response.status === 502) {
-              log("Blockchain API temporarily unavailable");
-            }
+            indicator.className = "mode-indicator mode-json";
+            indicator.textContent = "JSON Mode";
+            warning.style.display = "block";
           }
-        } catch (error) {
-          log(`NETWORK ERROR: ${error.message}`);
-          showError("Network error - please check your connection and try again");
-        } finally {
-          // Re-enable button
-          fetchBtn.textContent = originalText;
-          fetchBtn.disabled = false;
+
+          log(`Backend mode: ${mode}`);
         }
+      } catch (error) {
+        log(`Error checking backend mode: ${error.message}`);
+      }
+    }
+
+    async function listFiles() {
+      const r = await fetch("/api/graph/list");
+      const j = await r.json();
+      const el = $("#files");
+      el.innerHTML = "";
+      if (j.success) {
+        j.files.forEach((name) => {
+          const b = document.createElement("button");
+          b.textContent = name;
+          b.onclick = () => loadGraph(name);
+          el.appendChild(b);
+          el.appendChild(document.createElement("br"));
+        });
+        log("listed " + j.files.length + " graphs");
+      } else {
+        log("list error " + j.error);
+      }
+    }
+
+    async function fetchGraph() {
+      const address = $("#address").value.trim();
+      const tx_limit = parseInt($("#tx_limit").value || "50", 10);
+
+      // Enhanced input validation
+      if (!address) {
+        log("ERROR: Address is required");
+        showError("Please enter a Bitcoin address");
+        return;
       }
 
-      function showError(message) {
-        // Create or update error notification
-        let errorDiv = $("#errorNotification");
-        if (!errorDiv) {
-          errorDiv = document.createElement("div");
-          errorDiv.id = "errorNotification";
-          errorDiv.style.cssText = `
+      // Basic Bitcoin address validation
+      const btcRegex = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$|^bc1[a-z0-9]{39,59}$/;
+      if (!btcRegex.test(address)) {
+        log("ERROR: Invalid Bitcoin address format");
+        showError("Invalid Bitcoin address format");
+        return;
+      }
+
+      if (tx_limit < 1 || tx_limit > 200) {
+        log("ERROR: Transaction limit must be between 1 and 200");
+        showError("Transaction limit must be between 1 and 200");
+        return;
+      }
+
+      // Disable button during fetch
+      const fetchBtn = $("#fetchBtn");
+      const originalText = fetchBtn.textContent;
+      fetchBtn.textContent = "Fetching...";
+      fetchBtn.disabled = true;
+
+      try {
+        log(`Fetching graph for address: ${address.substring(0, 10)}... with limit ${tx_limit}`);
+
+        const response = await fetch("/api/graph/address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ address, tx_limit }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          log(`SUCCESS: Graph saved as ${data.file}`);
+          log(`Stats: ${data.stats.nodes} nodes, ${data.stats.edges} edges`);
+          showSuccess(`Graph fetched successfully! ${data.stats.nodes} nodes, ${data.stats.edges} edges`);
+          await listFiles();
+        } else {
+          const errorMsg = data.error || `HTTP ${response.status}: ${response.statusText}`;
+          log(`ERROR: ${errorMsg}`);
+          showError(errorMsg);
+
+          // Handle specific error codes
+          if (response.status === 429) {
+            log("Rate limit exceeded - please wait before trying again");
+          } else if (response.status === 404) {
+            log("No transaction data found for this address");
+          } else if (response.status === 502) {
+            log("Blockchain API temporarily unavailable");
+          }
+        }
+      } catch (error) {
+        log(`NETWORK ERROR: ${error.message}`);
+        showError("Network error - please check your connection and try again");
+      } finally {
+        // Re-enable button
+        fetchBtn.textContent = originalText;
+        fetchBtn.disabled = false;
+      }
+    }
+
+    function showError(message) {
+      // Create or update error notification
+      let errorDiv = $("#errorNotification");
+      if (!errorDiv) {
+        errorDiv = document.createElement("div");
+        errorDiv.id = "errorNotification";
+        errorDiv.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -325,24 +347,24 @@
             max-width: 300px;
             font-size: 14px;
           `;
-          document.body.appendChild(errorDiv);
-        }
-        errorDiv.textContent = message;
-        errorDiv.style.display = "block";
-
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          if (errorDiv) errorDiv.style.display = "none";
-        }, 5000);
+        document.body.appendChild(errorDiv);
       }
+      errorDiv.textContent = message;
+      errorDiv.style.display = "block";
 
-      function showSuccess(message) {
-        // Create or update success notification
-        let successDiv = $("#successNotification");
-        if (!successDiv) {
-          successDiv = document.createElement("div");
-          successDiv.id = "successNotification";
-          successDiv.style.cssText = `
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        if (errorDiv) errorDiv.style.display = "none";
+      }, 5001);
+    }
+
+    function showSuccess(message) {
+      // Create or update success notification
+      let successDiv = $("#successNotification");
+      if (!successDiv) {
+        successDiv = document.createElement("div");
+        successDiv.id = "successNotification";
+        successDiv.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -355,221 +377,222 @@
             max-width: 300px;
             font-size: 14px;
           `;
-          document.body.appendChild(successDiv);
-        }
-        successDiv.textContent = message;
-        successDiv.style.display = "block";
-
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-          if (successDiv) successDiv.style.display = "none";
-        }, 3000);
+        document.body.appendChild(successDiv);
       }
+      successDiv.textContent = message;
+      successDiv.style.display = "block";
 
-      async function loadGraph(name) {
-        const r = await fetch(
-          "/api/graph/get?name=" + encodeURIComponent(name)
-        );
-        const graphJson = await r.json();
-        const G = new graphology.Graph({ multi: false, type: "directed" });
-        const nodes = graphJson.nodes || [];
-        const edges = graphJson.edges || [];
-        nodes.forEach((n, i) => {
-          const x = Math.cos((2 * Math.PI * i) / Math.max(1, nodes.length));
-          const y = Math.sin((2 * Math.PI * i) / Math.max(1, nodes.length));
-          G.addNode(n.id, {
-            label: n.label || n.id,
-            color: n.type === "transaction" ? "#60a5fa" : "#34d399",
-            x,
-            y,
-            size: 3,
-            type: n.type || "address",
-          });
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        if (successDiv) successDiv.style.display = "none";
+      }, 3000);
+    }
+
+    async function loadGraph(name) {
+      const r = await fetch(
+        "/api/graph/get?name=" + encodeURIComponent(name)
+      );
+      const graphJson = await r.json();
+      const G = new graphology.Graph({ multi: false, type: "directed" });
+      const nodes = graphJson.nodes || [];
+      const edges = graphJson.edges || [];
+      nodes.forEach((n, i) => {
+        const x = Math.cos((2 * Math.PI * i) / Math.max(1, nodes.length));
+        const y = Math.sin((2 * Math.PI * i) / Math.max(1, nodes.length));
+        G.addNode(n.id, {
+          label: n.label || n.id,
+          color: n.type === "transaction" ? "#60a5fa" : "#34d399",
+          x,
+          y,
+          size: 3,
+          type: n.type || "address",
         });
-        edges.forEach((e, i) => {
-          const id = e.id || `${e.source}->${e.target}-${i}`;
-          if (G.hasNode(e.source) && G.hasNode(e.target) && !G.hasEdge(id)) {
-            G.addEdgeWithKey(id, e.source, e.target, {
-              label: e.type || "",
-              size: 1,
-              color: e.type === "SENT_FROM" ? "#ef4444" : "#3b82f6",
-            });
-          }
-        });
-        graph = G;
-        const container = document.getElementById("sigma-container");
-        if (renderer) renderer.kill();
-        renderer = new sigma.Sigma(graph, container, {
-          renderLabels: true,
-          labelSize: 12,
-          minNodeSize: 1.5,
-          maxNodeSize: 6,
-          minEdgeSize: 0.5,
-          maxEdgeSize: 4,
-        });
-        renderer.on("clickNode", ({ node }) => {
-          selectedNode = node;
-          log("selected node " + node);
-          updateNodeInfo();
-        });
-        graphologyLayoutForceatlas2.assign(graph, {
-          iterations: 200,
-          settings: { scalingRatio: 10, gravity: 0.5, slowDown: 2 },
-        });
-        renderer.refresh();
-        log("rendered " + nodes.length + " nodes " + edges.length + " edges");
-      }
-
-      function runLouvain() {
-        if (!graph) {
-          log("no graph loaded");
-          return;
-        }
-        const result = graphologyCommunitiesLouvain.louvain(graph, {
-          rng: Math.random,
-          resolution: 1,
-        });
-        const commToColor = {};
-        let idx = 0;
-        Object.keys(result).forEach((node) => {
-          const c = result[node];
-          if (!(c in commToColor))
-            commToColor[c] = palette[idx++ % palette.length];
-        });
-        graph.forEachNode((n, attr) => {
-          const c = result[n];
-          graph.setNodeAttribute(n, "color", commToColor[c] || "#93c5fd");
-        });
-        renderer.refresh();
-        log("louvain communities=" + new Set(Object.values(result)).size);
-      }
-
-      function traceNode() {
-        if (!graph || !selectedNode) {
-          log("ERROR: No graph loaded or no node selected");
-          showError("Please load a graph and select a node first");
-          return;
-        }
-
-        // Store original colors
-        if (!graph.originalColors) {
-          graph.originalColors = {};
-          graph.forEachNode((node, attr) => {
-            graph.originalColors[node] = attr.color;
-          });
-        }
-
-        // Find connected nodes
-        const connectedNodes = new Set();
-        const connectedEdges = new Set();
-
-        // Add the selected node
-        connectedNodes.add(selectedNode);
-
-        // Find all directly connected nodes
-        graph.forEachEdge((edge, attr, source, target) => {
-          if (source === selectedNode || target === selectedNode) {
-            connectedNodes.add(source);
-            connectedNodes.add(target);
-            connectedEdges.add(edge);
-          }
-        });
-
-        // Highlight connected nodes and edges
-        graph.forEachNode((node, attr) => {
-          if (connectedNodes.has(node)) {
-            graph.setNodeAttribute(node, "color", "#fbbf24"); // Yellow for connected
-            graph.setNodeAttribute(node, "size", 5); // Larger size
-          } else {
-            graph.setNodeAttribute(node, "color", "#6b7280"); // Gray for not connected
-            graph.setNodeAttribute(node, "size", 2); // Smaller size
-          }
-        });
-
-        // Highlight connected edges
-        graph.forEachEdge((edge, attr) => {
-          if (connectedEdges.has(edge)) {
-            graph.setEdgeAttribute(edge, "color", "#fbbf24");
-            graph.setEdgeAttribute(edge, "size", 3);
-          } else {
-            graph.setEdgeAttribute(edge, "color", "#374151");
-            graph.setEdgeAttribute(edge, "size", 0.5);
-          }
-        });
-
-        renderer.refresh();
-        log(`Traced ${connectedNodes.size} connected nodes for ${selectedNode}`);
-        showSuccess(`Traced ${connectedNodes.size} connected nodes`);
-      }
-
-      function clearTrace() {
-        if (!graph) {
-          log("no graph loaded");
-          return;
-        }
-
-        // Restore original colors if they exist
-        if (graph.originalColors) {
-          graph.forEachNode((node, attr) => {
-            const originalColor = graph.originalColors[node];
-            if (originalColor) {
-              graph.setNodeAttribute(node, "color", originalColor);
-            }
-            graph.setNodeAttribute(node, "size", 3); // Reset to default size
-          });
-
-          // Reset edge colors and sizes
-          graph.forEachEdge((edge, attr) => {
-            graph.setEdgeAttribute(edge, "color", attr.type === "SENT_FROM" ? "#ef4444" : "#3b82f6");
-            graph.setEdgeAttribute(edge, "size", 1);
-          });
-
-          renderer.refresh();
-          log("Trace cleared - restored original colors");
-          showSuccess("Trace cleared");
-        } else {
-          log("No trace to clear");
-        }
-      }
-
-      function updateNodeInfo() {
-        if (!selectedNode || !graph) {
-          $("#nodeInfo").style.display = "none";
-          return;
-        }
-
-        const nodeInfo = $("#nodeInfo");
-        const nodeId = $("#selectedNodeId");
-        const nodeType = $("#selectedNodeType");
-        const nodeConnections = $("#selectedNodeConnections");
-
-        // Get node attributes
-        const attr = graph.getNodeAttributes(selectedNode);
-        nodeId.textContent = selectedNode;
-        nodeType.textContent = attr.type || "unknown";
-
-        // Count connections
-        let inDegree = 0;
-        let outDegree = 0;
-        graph.forEachEdge((edge, edgeAttr, source, target) => {
-          if (source === selectedNode) outDegree++;
-          if (target === selectedNode) inDegree++;
-        });
-
-        nodeConnections.textContent = `${inDegree} incoming, ${outDegree} outgoing`;
-        nodeInfo.style.display = "block";
-      }
-
-      $("#fetchBtn").onclick = fetchGraph;
-      $("#refreshBtn").onclick = listFiles;
-      $("#runLouvainBtn").onclick = runLouvain;
-      $("#traceNodeBtn").onclick = traceNode;
-      $("#clearTraceBtn").onclick = clearTrace;
-
-      document.addEventListener("DOMContentLoaded", () => {
-        checkBackendMode();
-        listFiles();
       });
-    </script>
-  </body>
+      edges.forEach((e, i) => {
+        const id = e.id || `${e.source}->${e.target}-${i}`;
+        if (G.hasNode(e.source) && G.hasNode(e.target) && !G.hasEdge(id)) {
+          G.addEdgeWithKey(id, e.source, e.target, {
+            label: e.type || "",
+            size: 1,
+            color: e.type === "SENT_FROM" ? "#ef4444" : "#3b82f6",
+          });
+        }
+      });
+      graph = G;
+      const container = document.getElementById("sigma-container");
+      if (renderer) renderer.kill();
+      renderer = new sigma.Sigma(graph, container, {
+        renderLabels: true,
+        labelSize: 12,
+        minNodeSize: 1.5,
+        maxNodeSize: 6,
+        minEdgeSize: 0.5,
+        maxEdgeSize: 4,
+      });
+      renderer.on("clickNode", ({ node }) => {
+        selectedNode = node;
+        log("selected node " + node);
+        updateNodeInfo();
+      });
+      graphologyLayoutForceatlas2.assign(graph, {
+        iterations: 200,
+        settings: { scalingRatio: 10, gravity: 0.5, slowDown: 2 },
+      });
+      renderer.refresh();
+      log("rendered " + nodes.length + " nodes " + edges.length + " edges");
+    }
+
+    function runLouvain() {
+      if (!graph) {
+        log("no graph loaded");
+        return;
+      }
+      const result = graphologyCommunitiesLouvain.louvain(graph, {
+        rng: Math.random,
+        resolution: 1,
+      });
+      const commToColor = {};
+      let idx = 0;
+      Object.keys(result).forEach((node) => {
+        const c = result[node];
+        if (!(c in commToColor))
+          commToColor[c] = palette[idx++ % palette.length];
+      });
+      graph.forEachNode((n, attr) => {
+        const c = result[n];
+        graph.setNodeAttribute(n, "color", commToColor[c] || "#93c5fd");
+      });
+      renderer.refresh();
+      log("louvain communities=" + new Set(Object.values(result)).size);
+    }
+
+    function traceNode() {
+      if (!graph || !selectedNode) {
+        log("ERROR: No graph loaded or no node selected");
+        showError("Please load a graph and select a node first");
+        return;
+      }
+
+      // Store original colors
+      if (!graph.originalColors) {
+        graph.originalColors = {};
+        graph.forEachNode((node, attr) => {
+          graph.originalColors[node] = attr.color;
+        });
+      }
+
+      // Find connected nodes
+      const connectedNodes = new Set();
+      const connectedEdges = new Set();
+
+      // Add the selected node
+      connectedNodes.add(selectedNode);
+
+      // Find all directly connected nodes
+      graph.forEachEdge((edge, attr, source, target) => {
+        if (source === selectedNode || target === selectedNode) {
+          connectedNodes.add(source);
+          connectedNodes.add(target);
+          connectedEdges.add(edge);
+        }
+      });
+
+      // Highlight connected nodes and edges
+      graph.forEachNode((node, attr) => {
+        if (connectedNodes.has(node)) {
+          graph.setNodeAttribute(node, "color", "#fbbf24"); // Yellow for connected
+          graph.setNodeAttribute(node, "size", 5); // Larger size
+        } else {
+          graph.setNodeAttribute(node, "color", "#6b7280"); // Gray for not connected
+          graph.setNodeAttribute(node, "size", 2); // Smaller size
+        }
+      });
+
+      // Highlight connected edges
+      graph.forEachEdge((edge, attr) => {
+        if (connectedEdges.has(edge)) {
+          graph.setEdgeAttribute(edge, "color", "#fbbf24");
+          graph.setEdgeAttribute(edge, "size", 3);
+        } else {
+          graph.setEdgeAttribute(edge, "color", "#374151");
+          graph.setEdgeAttribute(edge, "size", 0.5);
+        }
+      });
+
+      renderer.refresh();
+      log(`Traced ${connectedNodes.size} connected nodes for ${selectedNode}`);
+      showSuccess(`Traced ${connectedNodes.size} connected nodes`);
+    }
+
+    function clearTrace() {
+      if (!graph) {
+        log("no graph loaded");
+        return;
+      }
+
+      // Restore original colors if they exist
+      if (graph.originalColors) {
+        graph.forEachNode((node, attr) => {
+          const originalColor = graph.originalColors[node];
+          if (originalColor) {
+            graph.setNodeAttribute(node, "color", originalColor);
+          }
+          graph.setNodeAttribute(node, "size", 3); // Reset to default size
+        });
+
+        // Reset edge colors and sizes
+        graph.forEachEdge((edge, attr) => {
+          graph.setEdgeAttribute(edge, "color", attr.type === "SENT_FROM" ? "#ef4444" : "#3b82f6");
+          graph.setEdgeAttribute(edge, "size", 1);
+        });
+
+        renderer.refresh();
+        log("Trace cleared - restored original colors");
+        showSuccess("Trace cleared");
+      } else {
+        log("No trace to clear");
+      }
+    }
+
+    function updateNodeInfo() {
+      if (!selectedNode || !graph) {
+        $("#nodeInfo").style.display = "none";
+        return;
+      }
+
+      const nodeInfo = $("#nodeInfo");
+      const nodeId = $("#selectedNodeId");
+      const nodeType = $("#selectedNodeType");
+      const nodeConnections = $("#selectedNodeConnections");
+
+      // Get node attributes
+      const attr = graph.getNodeAttributes(selectedNode);
+      nodeId.textContent = selectedNode;
+      nodeType.textContent = attr.type || "unknown";
+
+      // Count connections
+      let inDegree = 0;
+      let outDegree = 0;
+      graph.forEachEdge((edge, edgeAttr, source, target) => {
+        if (source === selectedNode) outDegree++;
+        if (target === selectedNode) inDegree++;
+      });
+
+      nodeConnections.textContent = `${inDegree} incoming, ${outDegree} outgoing`;
+      nodeInfo.style.display = "block";
+    }
+
+    $("#fetchBtn").onclick = fetchGraph;
+    $("#refreshBtn").onclick = listFiles;
+    $("#runLouvainBtn").onclick = runLouvain;
+    $("#traceNodeBtn").onclick = traceNode;
+    $("#clearTraceBtn").onclick = clearTrace;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      checkBackendMode();
+      listFiles();
+    });
+  </script>
+</body>
+
 </html>

@@ -5,10 +5,10 @@ import { Activity, Database, FileText, CheckCircle, AlertCircle, Clock, Settings
 const SystemStatus = ({ backendMode, systemStatus }) => {
   const getStatusIcon = () => {
     if (!backendMode) return <Clock className="w-5 h-5 text-gray-400" />;
-    
+
     if (backendMode.backend_mode === 'neo4j') {
-      return backendMode.neo4j_available ? 
-        <Database className="w-5 h-5 text-green-500" /> : 
+      return backendMode.neo4j_available ?
+        <Database className="w-5 h-5 text-green-500" /> :
         <Database className="w-5 h-5 text-red-500" />;
     } else {
       return <FileText className="w-5 h-5 text-yellow-500" />;
@@ -17,7 +17,7 @@ const SystemStatus = ({ backendMode, systemStatus }) => {
 
   const getStatusColor = () => {
     if (!backendMode) return 'text-gray-400';
-    
+
     if (backendMode.backend_mode === 'neo4j') {
       return backendMode.neo4j_available ? 'text-green-400' : 'text-red-400';
     } else {
@@ -27,7 +27,7 @@ const SystemStatus = ({ backendMode, systemStatus }) => {
 
   const getStatusText = () => {
     if (!backendMode) return 'Unknown';
-    
+
     if (backendMode.backend_mode === 'neo4j') {
       return backendMode.neo4j_available ? 'Neo4j Connected' : 'Neo4j Unavailable';
     } else {
@@ -105,7 +105,7 @@ const SystemStatus = ({ backendMode, systemStatus }) => {
             <span className="text-sm font-medium text-blue-300">Connection Info</span>
           </div>
           <div className="text-xs text-blue-200 space-y-1">
-            <div>Backend: http://localhost:5000</div>
+            <div>Backend: http://localhost:5001</div>
             <div>Frontend: http://localhost:3000</div>
             <div>Data Directory: Data/graph</div>
           </div>

@@ -42,7 +42,7 @@ fi
 if [ ! -f .env ]; then
     echo "🔧 Creating .env file..."
     cat > .env << EOF
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:5001
 EOF
     echo "✅ .env file created with default API URL"
 else
@@ -51,10 +51,10 @@ fi
 
 # Check if backend is running
 echo "🔍 Checking backend connection..."
-if curl -s http://localhost:5000/api/status > /dev/null 2>&1; then
-    echo "✅ Backend is running on http://localhost:5000"
+if curl -s http://localhost:5001/api/status > /dev/null 2>&1; then
+    echo "✅ Backend is running on http://localhost:5001"
 else
-    echo "⚠️  Backend is not running on http://localhost:5000"
+    echo "⚠️  Backend is not running on http://localhost:5001"
     echo "   Please start the ChainBreak backend first:"
     echo "   python app.py --api"
 fi

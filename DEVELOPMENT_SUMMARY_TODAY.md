@@ -160,7 +160,7 @@ python test_neo4j_integration.py
 
 ### Access Points
 - **Neo4j Browser**: http://localhost:7474 (neo4j/password)
-- **ChainBreak API**: http://localhost:5000
+- **ChainBreak API**: http://localhost:5001
 - **ChainBreak Frontend**: http://localhost:3000
 
 ### Configuration

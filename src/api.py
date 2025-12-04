@@ -13,8 +13,8 @@ app = Flask(__name__)
 
 # Enable CORS before registering blueprints
 CORS(app, resources={
-    r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]},
-    r"/frontend/*": {"origins": ["http://localhost:3000", "http://localhost:5000"]}
+    r"/api/*": {"origins": ["http://localhost:3000", "http://localhost:5001", "http://localhost:5001"]},
+    r"/frontend/*": {"origins": ["http://localhost:3000", "http://localhost:5001", "http://localhost:5001"]}
 })
 
 app.register_blueprint(frontend_bp)
@@ -587,4 +587,4 @@ def create_app(config=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

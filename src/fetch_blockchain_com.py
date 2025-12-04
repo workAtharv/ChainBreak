@@ -314,8 +314,8 @@ class BlockchainComFetcher:
     def fetch_address(self, address: str, limit: int = 50) -> Dict[str, Any]:
         """Fetch address data with transaction history"""
         self._validate_address(address)
-        if limit < 1 or limit > 100:
-            raise ValueError(f"Limit must be between 1 and 100, got {limit}")
+        if limit < 1 or limit > 1000:
+            raise ValueError(f"Limit must be between 1 and 1000, got {limit}")
 
         url = f"{BLOCKCHAIN_BASE}/rawaddr/{address}"
         params = {"limit": limit}

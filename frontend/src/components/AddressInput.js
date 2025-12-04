@@ -4,7 +4,7 @@ import { Bitcoin, Search, Settings } from 'lucide-react';
 
 const AddressInput = ({ onSubmit, isLoading }) => {
   const [address, setAddress] = useState('');
-  const [txLimit, setTxLimit] = useState(50);
+  const [txLimit, setTxLimit] = useState(1000);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleSubmit = (e) => {
@@ -15,7 +15,7 @@ const AddressInput = ({ onSubmit, isLoading }) => {
   };
 
   const handleTxLimitChange = (e) => {
-    const value = parseInt(e.target.value) || 50;
+    const value = parseInt(e.target.value) || 1000;
     setTxLimit(Math.max(1, Math.min(1000, value)));
   };
 

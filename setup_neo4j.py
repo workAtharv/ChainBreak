@@ -109,7 +109,7 @@ def create_sample_data(uri, username, password):
                 },
                 {
                     "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-                    "balance": 5000000000,
+                    "balance": 5001000000,
                     "risk_score": 0.1,
                     "is_illicit": False,
                     "illicit_type": None

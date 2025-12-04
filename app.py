@@ -109,7 +109,7 @@ def run_standalone_analysis(address: str = None):
             chainbreak.close()
 
 
-def run_api_server():
+def run_api_server(port: int = 5001):
     """Start the Flask API server"""
     try:
         print("🔗 Starting ChainBreak API Server...")
@@ -118,17 +118,17 @@ def run_api_server():
         app = create_app()
 
         print("✅ API server started successfully!")
-        print("📖 API Documentation: http://localhost:5000/")
+        print(f"📖 API Documentation: http://localhost:{port}/")
         print("🔌 API Endpoints:")
         print("  GET  /api/status          - System status")
         print("  POST /api/analyze         - Analyze single address")
         print("  POST /api/analyze/batch   - Analyze multiple addresses")
         print("  GET  /api/export/gephi    - Export to Gephi")
         print("  POST /api/report/risk     - Generate risk report")
-        print("\n🚀 Server running on http://localhost:5000")
+        print(f"\n🚀 Server running on http://localhost:{port}")
         print("Press Ctrl+C to stop the server")
 
-        app.run(debug=False, host='0.0.0.0', port=5000)
+        app.run(debug=False, host='0.0.0.0', port=port)
 
     except KeyboardInterrupt:
         print("\n\n⚠️  API server stopped by user")
@@ -176,6 +176,13 @@ Examples:
         help='Enable verbose logging'
     )
 
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=5001,
+        help='Port to run the API server on (default: 5001)'
+    )
+
     args = parser.parse_args()
 
     # Setup logging
@@ -197,7 +204,7 @@ Examples:
 
     # Run appropriate mode
     if args.api:
-        run_api_server()
+        run_api_server(port=args.port)
     elif args.analyze:
         run_standalone_analysis(args.analyze)
     else:
